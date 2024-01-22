@@ -1,6 +1,6 @@
 ## AUTHOR:         [DAVID OJEIFO](https://github.com/Kingvadee).
 ## COHORT:         13.
-## Repo:           [alx-backend-javascript](https://github.com/Kingvadee/alx-backend-javascript)
+## Repo:           [alx-backend-storage](https://github.com/Kingvadee/alx-backend-storage)
 ## Dir:		   0x01-NoSQL
 
 # Tasks :page_with_curl:

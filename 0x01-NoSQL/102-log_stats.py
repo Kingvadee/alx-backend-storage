@@ -33,6 +33,9 @@ def log_stats(mongo_collection, option=None):
         {"$limit": 10}
     ]
 
+    status_check = mongo_collection.count_documents({"path": "/status"})
+    print(f"{status_check} status check")
+
     top_ips = list(mongo_collection.aggregate(pipeline))
 
     print("IPs:")
@@ -41,8 +44,7 @@ def log_stats(mongo_collection, option=None):
         count = ip_data["count"]
         print(f"\t{ip}: {count}")
 
-    status_check = mongo_collection.count_documents({"path": "/status"})
-    print(f"{status_check} status check")
+
 
 if __name__ == "__main__":
     nginx_collection = MongoClient('mongodb://127.0.0.1:27017')['logs']['nginx']

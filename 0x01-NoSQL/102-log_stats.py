@@ -13,24 +13,32 @@ def log_stats(mongo_collection, option=None):
     """
     Provide advanced stats about Nginx logs stored in MongoDB
     """
-    items = {}
     if option:
         value = mongo_collection.count_documents(
             {"method": {"$regex": option}})
         print(f"\tmethod {option}: {value}")
         return
 
-    result = mongo_collection.count_documents(items)
+    result = mongo_collection.count_documents({})
     print(f"{result} logs")
     print("Methods:")
     for method in METHODS:
-        log_stats(mongo_collection, method)
+        value = mongo_collection.count_documents({"method": method})
+        print(f"\tmethod {method}: {value}")
 
-    # Count the occurrences of each IP
-    ip_counter = Counter(log['ip'] for log in mongo_collection.find())
+    # Use aggregation pipeline to get the top 10 IPs
+    pipeline = [
+        {"$group": {"_id": "$ip", "count": {"$sum": 1}}},
+        {"$sort": {"count": -1}},
+        {"$limit": 10}
+    ]
+
+    top_ips = list(mongo_collection.aggregate(pipeline))
 
     print("IPs:")
-    for ip, count in ip_counter.most_common(10):
+    for ip_data in top_ips:
+        ip = ip_data["_id"]
+        count = ip_data["count"]
         print(f"\t{ip}: {count}")
 
     status_check = mongo_collection.count_documents({"path": "/status"})

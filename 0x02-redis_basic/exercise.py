@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Module declares a redis class and methods"""
+"""Module declares  a redis class and methods"""
 import redis
 from uuid import uuid4
 from typing import Union, Callable, Optional

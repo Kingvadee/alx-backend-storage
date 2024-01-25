@@ -1,37 +1,37 @@
 #!/usr/bin/env python3
-"""
-web cache and tracker
-"""
+"""this is module for redis"""
 import requests
 import redis
 from functools import wraps
 
-store = redis.Redis()
+cache_store = redis.Redis()
 
 
-def count_url_access(method):
-    """ Decorator counting how many times
-    a URL is accessed """
+def track_url_access(method):
+    """track url access method for redis"""
+
     @wraps(method)
-    def wrapper(url):
-        cached_key = "cached:" + url
-        cached_data = store.get(cached_key)
+    def decorated_function(url):
+        cached_key = f"cached:{url}"
+        cached_data = cache_store.get(cached_key)
+
         if cached_data:
             return cached_data.decode("utf-8")
 
-        count_key = "count:" + url
+        count_key = f"count:{url}"
         html = method(url)
 
-        store.incr(count_key)
-        store.set(cached_key, html)
-        store.expire(cached_key, 10)
+        cache_store.incr(count_key)
+        cache_store.set(cached_key, html)
+        cache_store.expire(cached_key, 10)
+
         return html
-    return wrapper
+
+    return decorated_function
 
 
-@count_url_access
-def get_page(url):
-    """ Returns HTML content of a url """
-    res = requests.get(url)
-    return res.text
-
+@track_url_access
+def get_page(url: str) -> str:
+    """get page method for redis"""
+    response = requests.get(url)
+    return response.text

@@ -1,20 +1,37 @@
 #!/usr/bin/env python3
-'''Reading from Redis and recovering original type'''
-
-
+"""
+web cache and tracker
+"""
+import requests
 import redis
+from functools import wraps
+
+store = redis.Redis()
 
 
-class Cache:
-    '''Cache class'''
-    def __init__(self):
-        '''Constructor'''
-        self._redis = redis.Redis()
-        self._redis.flushdb()
-        print(self._redis.ping())
+def count_url_access(method):
+    """ Decorator counting how many times
+    a URL is accessed """
+    @wraps(method)
+    def wrapper(url):
+        cached_key = "cached:" + url
+        cached_data = store.get(cached_key)
+        if cached_data:
+            return cached_data.decode("utf-8")
 
-    def store(self, data):
-        '''Store data in Redis'''
-        for key in data:
-            self._redis.set(key, data[key])
-        return None
+        count_key = "count:" + url
+        html = method(url)
+
+        store.incr(count_key)
+        store.set(cached_key, html)
+        store.expire(cached_key, 10)
+        return html
+    return wrapper
+
+
+@count_url_access
+def get_page(url):
+    """ Returns HTML content of a url """
+    res = requests.get(url)
+    return res.text
+
